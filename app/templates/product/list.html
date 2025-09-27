@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos - ProdManager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <header class="mb-4">
+            <h1>Produtos Disponíveis</h1>
+            {% if current_user.is_authenticated %}
+                <p>Olá, {{ current_user.username }}!</p>
+                <nav>
+                    <a href="{{ url_for('main.create_product_view') }}" class="btn btn-primary">Criar Produto</a>
+                    <a href="{{ url_for('main.logout') }}" class="btn btn-secondary">Logout</a>
+                </nav>
+            {% else %}
+                <p>Faça login para visualizar os produtos.</p>
+                <a href="{{ url_for('main.login') }}" class="btn btn-primary">Login</a>
+            {% endif %}
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <main>
+            {% if current_user.is_authenticated %}
+                {% if products %}
+                    <ul class="list-group">
+                        {% for produto in products %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ produto.name }}</strong> <br>
+                                    <small>R$ {{ produto.price }}</small>
+                                </div>
+                                <div>
+                                    <a href="{{ url_for('main.get_products_id', id_product=produto.id) }}" class="btn btn-info btn-sm">Detalhes</a>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>Nenhum produto encontrado.</p>
+                {% endif %}
+            {% endif %}
+        </main>
+    </div>
+</body>
+</html>

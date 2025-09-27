@@ -24,29 +24,6 @@ def index():
     return render_template('index.html', product=product)
 
 
-"""@main_bp.route('/produtos', methods=['GET'], endpoint='get_products')
-@login_required
-def get_products():
-    products = list_products()
-    print("Products in get_products:", products)  # Debug print
-    return render_template('product/list.html', products=products)
-
-
-@main_bp.route('/produtos/<int:id_product>', methods=["GET"],
-               endpoint='get_products_id')
-@login_required
-def get_products_id(id_product):
-    try:
-        product = product_by_id(id_product)
-        return render_template('product/detail.html', product=product)
-    except ValueError as e:
-        flash(str(e), "danger")
-        return redirect(url_for('main.get_products'))
-    except Exception as e:
-        flash(f"Erro inesperado: {str(e)}", "danger")
-        return redirect(url_for('main.get_products'))
-
-
 @main_bp.route('/produtos/novo', methods=["GET", "POST"],
                endpoint='create_product_view')
 @login_required
@@ -118,7 +95,30 @@ def delete_product_view(id_product):
     except Exception as e:
         flash(f"Erro ao deletar o produto: {str(e)}", "danger")
         return redirect(url_for('main.get_products'))
-"""
+
+
+@main_bp.route('/produtos', methods=['GET'], endpoint='get_products')
+@login_required
+def get_products():
+    products = list_products()
+    print("Products in get_products:", products)  # Debug print
+    return render_template('product/list.html', products=products)
+
+
+@main_bp.route('/produtos/<int:id_product>', methods=["GET"],
+               endpoint='get_products_id')
+@login_required
+def get_products_id(id_product):
+    try:
+        product = product_by_id(id_product)
+        return render_template('product/detail.html', product=product)
+    except ValueError as e:
+        flash(str(e), "danger")
+        return redirect(url_for('main.get_products'))
+    except Exception as e:
+        flash(f"Erro inesperado: {str(e)}", "danger")
+        return redirect(url_for('main.get_products'))
+
 
 @main_bp.route('/cadastro', methods=["GET", "POST"],
                endpoint='register_view')
