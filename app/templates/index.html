@@ -3,26 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Produtos - ProdManager</title>
+    <title>Produtos - Adega Digital</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </head>
 <body>
     <div class="container">
         <header class="mb-4">
             <div class="titulo">
-                <h1 class="mt-4">Produtos - ProdManager</h1>
+                <h1 class="mt-4">Produtos - Adega Digital</h1>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    <div class="mt-3">
+                      {% for category, message in messages %}
+                        {% set cls = 'info' %}
+                        {% if 'success' in category %}{% set cls = 'success' %}{% endif %}
+                        {% if 'danger' in category or 'error' in category %}{% set cls = 'danger' %}{% endif %}
+                        <div class="alert alert-{{ cls }} alert-dismissible fade show" role="alert">
+                          {{ message }}
+                          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                {% endwith %}
+
                 {% if current_user.is_authenticated %}
                     <p>Olá, {{ current_user.username }}!</p>
                 {% endif %}
             </div>
+
             <nav class="mt-3">
                 {% if current_user.is_authenticated %}
                     <a href="{{ url_for('main.create_product_view') }}" class="btn btn-primary">Criar produto</a>
                     <a href="{{ url_for('main.logout') }}" class="btn btn-secondary">Logout</a>
+
+                    <a href="{{ url_for('main.cart_view') }}" class="btn btn-outline-secondary position-relative ms-2">
+                      <i class="bi bi-cart"></i>
+                      {% set cart = session.get('cart') %}
+                      {% if cart and cart.get('qty', 0) > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                          {{ cart.get('qty', 0) }}
+                          <span class="visually-hidden">itens no carrinho</span>
+                        </span>
+                      {% endif %}
+                    </a>
                 {% else %}
                     <p>Faça o login para conseguir visualizar os produtos.</p>
                     <a href="{{ url_for('main.login') }}" class="btn btn-primary">Login</a>
+                    <a href="{{ url_for('main.register_view') }}" class="btn btn-primary">Cadastre-se</a>
                 {% endif %}
             </nav>
         </header>
@@ -34,13 +65,20 @@
                     {% for produto in product %}
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                <strong>{{ produto.name }}</strong>
-                                <br>
-                                <small>R$ {{ produto.price }}</small>
+                                <strong>{{ produto.name }}</strong><br>
+                                <small>R$ {{ "%.2f"|format(produto.price) | replace('.', ',') }}</small>
                             </div>
-                            <a href="{{ url_for('main.get_products_id', id_product=produto.id) }}" class="btn btn-info btn-sm">
+
+                            <div class="d-flex gap-2">
+                              <form method="POST" action="{{ url_for('main.cart_add', product_id=produto.id) }}">
+                                <input type="hidden" name="qty" value="1">
+                                <button type="submit" class="btn btn-info btn-sm">Adicionar ao Carrinho</button>
+                              </form>
+
+                              <a href="{{ url_for('main.get_products_id', id_product=produto.id) }}" class="btn btn-info btn-sm">
                                 Detalhes
-                            </a>
+                              </a>
+                            </div>
                         </li>
                     {% endfor %}
                 </ul>
@@ -50,5 +88,8 @@
         {% endif %}
         </main>
     </div>
+
+    <!-- Scripts do Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
