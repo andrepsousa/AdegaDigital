@@ -9,6 +9,7 @@ def list_products():
             "id": product.id,
             "name": product.name,
             "price": product.price,
+            "stock": getattr(product, 'stock', 0),
             "description": product.description
         }
         for product in products
@@ -24,7 +25,8 @@ def product_by_id(id_product):
             "id": product.id,
             "nome": product.name,
             "preco": product.price,
-            "descricao": product.description
+            "descricao": product.description,
+            "stock": getattr(product, 'stock', 0)
         }
     raise ValueError("Produto não encontrado.")
 
@@ -36,10 +38,13 @@ def create_product(data):
             raise ValueError("O nome e o preço do produto são obrigatórios.")
         if data.get("price") > 0:
 
+            stock = int(data.get("stock", 0) or 0)
+
             new_product = Product(
                 name=data.get("name"),
                 price=data.get("price"),
-                description=data.get("description")
+                description=data.get("description"),
+                stock=stock
             )
 
             db.session.add(new_product)
@@ -65,6 +70,12 @@ def update_product(id_product, new_data):
     product.name = new_data.get("name", product.name)
     product.price = new_data.get("price", product.price)
     product.description = new_data.get("description", product.description)
+    # update stock if provided
+    if 'stock' in new_data:
+        try:
+            product.stock = int(new_data.get('stock', product.stock))
+        except Exception:
+            pass
 
     db.session.commit()
 

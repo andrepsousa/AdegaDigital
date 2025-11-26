@@ -34,7 +34,14 @@
             <div class="card">
                 <div class="card-body">
                     <h3 class="card-title">{{ product.nome }}</h3>
-                    <h5 class="card-subtitle mb-2 text-muted">R$ {{ product.preco }}</h5>
+                    <h5 class="card-subtitle mb-2 text-muted">R$ {{ "%.2f"|format(product.preco) | replace('.', ',') }}</h5>
+                    {% if product.stock is defined %}
+                        {% if product.stock > 0 %}
+                            <p class="mb-1"><strong>Em estoque:</strong> {{ product.stock }}</p>
+                        {% else %}
+                            <p class="mb-1 text-danger"><strong>Sem estoque</strong></p>
+                        {% endif %}
+                    {% endif %}
                     {% if product.descricao %}
                         <p class="card-text">{{ product.descricao }}</p>
                     {% else %}

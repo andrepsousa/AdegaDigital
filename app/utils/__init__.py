@@ -6,6 +6,7 @@ from flask_migrate import Migrate
 import os
 from dotenv import load_dotenv
 from datetime import timedelta
+import secrets
 
 load_dotenv()
 db = SQLAlchemy()
@@ -26,7 +27,8 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+    # ensure SECRET_KEY is set for session support; prefer env var, fallback to secure random for dev
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or secrets.token_hex(32)
 
     db.init_app(app)
     jwt.init_app(app)

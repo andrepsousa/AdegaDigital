@@ -12,6 +12,7 @@ from app.models.models import Product, User
 from flask_jwt_extended import (
     create_access_token, jwt_required, get_jwt_identity
 )
+from app.services.order_service import finalize_order
 from datetime import timedelta
 from werkzeug.exceptions import BadRequest
 
@@ -36,7 +37,8 @@ def create_product_view():
         new_product_data = {
             "name": data["name"],
             "price": float(data["price"]),
-            "description": data.get("description")
+                "description": data.get("description"),
+                "stock": int(data.get("stock", 0) or 0)
         }
 
         create_product(new_product_data)
@@ -63,7 +65,8 @@ def update_product_view(id_product):
         updated_data = {
             "name": data["name"],
             "price": float(data["price"]),
-            "description": data.get("description")
+            "description": data.get("description"),
+            "stock": int(data.get("stock", 0) or 0)
         }
 
         update_product(id_product, updated_data)
@@ -278,3 +281,41 @@ def cart_clear():
     session['cart'] = {'items': {}, 'qty': 0, 'total': 0.0}
     flash("Carrinho limpo.", "product_success")
     return redirect(url_for('main.cart_view'))
+
+
+@main_bp.route('/orders/checkout', methods=['POST'], endpoint='checkout')
+@login_required
+def checkout():
+    # tenta usar o carrinho da sessão, senão aceita cart no body JSON
+    # If quantities were submitted via form (qty_...), update the session cart first
+    if request.form:
+        cart = _get_cart()
+        for pid, qty in request.form.items():
+            if not pid.startswith('qty_'):
+                continue
+            product_id_str = pid.split('_', 1)[1]
+            if product_id_str in cart['items']:
+                cart['items'][product_id_str]['qty'] = max(1, int(qty))
+        _save_cart(cart)
+
+    cart = session.get('cart') or (request.json or {}).get('cart')
+    try:
+        # do not ignore stock when finalizing an order so that stock is decremented
+        order, warnings, total_val = finalize_order(current_user, cart, allow_partial=True, allow_ignore_stock=False)
+    except Exception as exc:
+        flash(str(exc), 'product_danger')
+        return redirect(url_for('main.cart_view'))
+
+    # limpar carrinho e informar sucesso
+    session.pop('cart', None)
+    for w in warnings:
+        flash(w, 'product_danger')
+    # format total as currency R$ 1.234,56
+    try:
+        total_str = f"R$ {format(total_val, '.2f')}".replace('.', ',')
+    except Exception:
+        # fallback
+        total_str = str(getattr(order, 'total_amount', ''))
+
+    flash(f"Pedido #{order.id} finalizado (total: {total_str}).", "product_success")
+    return redirect(url_for('main.index'))
