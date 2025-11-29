@@ -10,6 +10,7 @@ def list_products():
             "name": product.name,
             "price": product.price,
             "stock": getattr(product, 'stock', 0),
+            "image": getattr(product, 'image', None),
             "description": product.description
         }
         for product in products
@@ -26,6 +27,7 @@ def product_by_id(id_product):
             "nome": product.name,
             "preco": product.price,
             "descricao": product.description,
+            "image": getattr(product, 'image', None),
             "stock": getattr(product, 'stock', 0)
         }
     raise ValueError("Produto não encontrado.")
@@ -44,7 +46,8 @@ def create_product(data):
                 name=data.get("name"),
                 price=data.get("price"),
                 description=data.get("description"),
-                stock=stock
+                stock=stock,
+                image=data.get('image')
             )
 
             db.session.add(new_product)
@@ -74,6 +77,13 @@ def update_product(id_product, new_data):
     if 'stock' in new_data:
         try:
             product.stock = int(new_data.get('stock', product.stock))
+        except Exception:
+            pass
+
+    # update image if provided
+    if 'image' in new_data:
+        try:
+            product.image = new_data.get('image')
         except Exception:
             pass
 

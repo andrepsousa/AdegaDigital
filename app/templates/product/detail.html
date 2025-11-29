@@ -33,6 +33,11 @@
         <main>
             <div class="card">
                 <div class="card-body">
+                    {% if product.image %}
+                        <div class="mb-3 text-center">
+                            <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.nome }}" style="max-width:320px;height:auto;display:block;margin:0 auto;"/>
+                        </div>
+                    {% endif %}
                     <h3 class="card-title">{{ product.nome }}</h3>
                     <h5 class="card-subtitle mb-2 text-muted">R$ {{ "%.2f"|format(product.preco) | replace('.', ',') }}</h5>
                     {% if product.stock is defined %}

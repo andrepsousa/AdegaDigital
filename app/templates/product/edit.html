@@ -30,7 +30,7 @@
         {% endwith %}
 
         <main>
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <div class="mb-3">
                     <label for="name" class="form-label">Nome do Produto</label>
                     <input type="text" class="form-control" id="name" name="name" value="{{ product.nome }}" required>
@@ -47,6 +47,18 @@
                     <label for="stock" class="form-label">Quantidade em estoque</label>
                     <input type="number" step="1" min="0" class="form-control" id="stock" name="stock" value="{{ product.stock or 0 }}" required>
                 </div>
+                <div class="mb-3">
+                    <label for="image" class="form-label">Imagem do produto (substitui a atual)</label>
+                    <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                </div>
+                {% if product.image %}
+                    <div class="mb-3">
+                        <label class="form-label">Imagem atual</label>
+                        <div>
+                            <img src="{{ url_for('static', filename=product.image) }}" alt="Imagem do produto" style="max-width:200px; height:auto;"/>
+                        </div>
+                    </div>
+                {% endif %}
                 <button type="submit" class="btn btn-success">Salvar Alterações</button>
             </form>
         </main>

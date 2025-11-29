@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, session
+from flask import render_template, request, redirect, url_for, flash, session, current_app
 from flask_login import login_user, login_required, logout_user, current_user
 from flask import (
     Blueprint, jsonify, request, render_template, url_for, flash, redirect
@@ -15,6 +15,9 @@ from flask_jwt_extended import (
 from app.services.order_service import finalize_order
 from datetime import timedelta
 from werkzeug.exceptions import BadRequest
+from werkzeug.utils import secure_filename
+import os
+import uuid
 
 main_bp = Blueprint('main', __name__)
 
@@ -34,11 +37,25 @@ def create_product_view():
 
     try:
         data = request.form
+        image_file = request.files.get('image')
+        image_path = None
+        if image_file and image_file.filename:
+            filename = secure_filename(image_file.filename)
+            # ensure uploads directory exists under static
+            uploads_dir = os.path.join(current_app.static_folder, 'uploads')
+            os.makedirs(uploads_dir, exist_ok=True)
+            # make filename unique
+            unique_name = f"{uuid.uuid4().hex}_{filename}"
+            dest = os.path.join(uploads_dir, unique_name)
+            image_file.save(dest)
+            # store relative path under static/ for use by templates
+            image_path = os.path.join('uploads', unique_name)
         new_product_data = {
             "name": data["name"],
             "price": float(data["price"]),
                 "description": data.get("description"),
-                "stock": int(data.get("stock", 0) or 0)
+            "stock": int(data.get("stock", 0) or 0),
+            "image": image_path
         }
 
         create_product(new_product_data)
@@ -62,11 +79,23 @@ def update_product_view(id_product):
 
     try:
         data = request.form
+        image_file = request.files.get('image')
+        image_path = None
+        if image_file and image_file.filename:
+            filename = secure_filename(image_file.filename)
+            uploads_dir = os.path.join(current_app.static_folder, 'uploads')
+            os.makedirs(uploads_dir, exist_ok=True)
+            unique_name = f"{uuid.uuid4().hex}_{filename}"
+            dest = os.path.join(uploads_dir, unique_name)
+            image_file.save(dest)
+            image_path = os.path.join('uploads', unique_name)
         updated_data = {
             "name": data["name"],
             "price": float(data["price"]),
             "description": data.get("description"),
-            "stock": int(data.get("stock", 0) or 0)
+            "stock": int(data.get("stock", 0) or 0),
+            # only update image if an upload happened
+            **({"image": image_path} if image_path else {})
         }
 
         update_product(id_product, updated_data)
@@ -239,7 +268,8 @@ def cart_add(product_id):
             'id': product.id,
             'name': product.name,
             'price': float(product.price),
-            'qty': qty
+            'qty': qty,
+            'image': getattr(product, 'image', None)
         }
 
     _save_cart(cart)

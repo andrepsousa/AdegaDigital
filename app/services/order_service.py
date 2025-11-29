@@ -75,7 +75,8 @@ def finalize_order(user, cart, allow_partial=False, allow_ignore_stock=False):
                     product.stock = product.stock - used_qty
                     db.session.add(product)
 
-                oi = OrderItem(order=order, product_id=pid, quantity=used_qty, unit_price=unit_price)
+                oi = OrderItem(order=order, product_id=pid, quantity=used_qty, unit_price=unit_price,
+                               product_image=getattr(product, 'image', None))
                 db.session.add(oi)
 
             order.total_amount = total

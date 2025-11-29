@@ -61,10 +61,15 @@
                     <ul class="list-group">
                         {% for produto in products %}
                             <li class="list-group-item d-flex justify-content-between align-items-center">
+                              <div class="d-flex gap-3 align-items-center">
+                                {% if produto.image %}
+                                  <img src="{{ url_for('static', filename=produto.image) }}" alt="{{ produto.name }}" style="width:64px;height:64px;object-fit:cover;border-radius:4px;"/>
+                                {% endif %}
                                 <div>
-                                    <strong>{{ produto.name }}</strong> <br>
-                                    <small>R$ {{ "%.2f"|format(produto.price) | replace('.', ',') }}</small>
+                                  <strong>{{ produto.name }}</strong> <br>
+                                  <small>R$ {{ "%.2f"|format(produto.price) | replace('.', ',') }}</small>
                                 </div>
+                              </div>
 
                                 <div class="d-flex gap-2">
                                     <!-- Adicionar ao Carrinho -->

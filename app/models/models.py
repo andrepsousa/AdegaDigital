@@ -9,6 +9,8 @@ class Product(db.Model):
     name = db.Column(db.String(100), nullable=False)
     price = db.Column(db.Float, nullable=False)
     description = db.Column(db.Text, nullable=True)
+    # relative path to image saved under app/static/uploads
+    image = db.Column(db.String(255), nullable=True)
     # optional stock field to support inventory checks
     stock = db.Column(db.Integer, nullable=False, default=0)
 
@@ -56,3 +58,5 @@ class OrderItem(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('produtos.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     unit_price = db.Column(db.Numeric(10, 2), nullable=False)
+    # keep a copy of the product image when the order is created
+    product_image = db.Column(db.String(255), nullable=True)
